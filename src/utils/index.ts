@@ -1,1 +1,2 @@
-export * from './addParamsToUrl.ts';
+export * from './addParamsToUrl';
+export * from './removeRowsDuplicates';

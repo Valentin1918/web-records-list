@@ -20,13 +20,13 @@ Checks all project according to ESLint rules
 
 Prepare the compiled js and css in `/dist` folder
 
-### `bun run build`
+### `bun run preview`
 
 Runs the compiled prod-like app at `http://localhost:4173/`
 
 ### `bun run prepare`
 
 Initialises the husky. It is needed only for further work with this repository.
-Needs to run only once -- establish pre-commit and pre-push hooks
+Needs to run only once -- establish the pre-commit hook
 
-## `Feel free to use npm, yarn or any other package manager`
+## `Feel free to use npm, yarn or any other package manager :)`
