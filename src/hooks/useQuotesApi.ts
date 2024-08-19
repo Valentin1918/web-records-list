@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { addParamsToUrl, removeRowsDuplicates } from '../utils';
 import { QUOTES_BASE_URL, QUOTES_PER_PAGE_LIMIT } from '../constants';
@@ -30,27 +29,14 @@ const useQuotesApi = () => {
     },
   })
 
-  const allRows = useMemo(() => {
-    if (!data) return [];
-    // TODO: we need to remove duplicates because the API provides duplicates on different pages
-    return removeRowsDuplicates(data.pages.flatMap((d) => d.results));
-  }, [data]);
-
-  const [allRowsIds, setAllRowsIds] = useState<Array<string>>(() => allRows.map(row => row._id));
-
-  useEffect(() => {
-    setAllRowsIds((currentAllRowsIds) => ([
-      ...currentAllRowsIds,
-      ...allRows.slice(currentAllRowsIds.length).map(row => row._id)
-    ]));
-  }, [allRows]);
+  const allRows = data ? removeRowsDuplicates(data.pages.flatMap((d) => d.results)) : [];
+  const allRowsIds = allRows.map(row => row._id);
 
   return {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     allRows,
-    setAllRowsIds,
     allRowsIds,
     status,
     error,

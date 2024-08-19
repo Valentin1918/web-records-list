@@ -1,17 +1,22 @@
 import { FC, useRef, useEffect } from 'react';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useQuotesApi } from '../hooks';
 import QuoteItem from './QuoteItem';
+import { PageProps } from '../types';
+import {removeRowsDuplicates} from "../utils";
+import {QUOTES_PER_PAGE_LIMIT} from "../constants";
 
 const QuotesList: FC = () => {
+  const queryClient = useQueryClient();
+
   const {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     allRows,
-    setAllRowsIds,
     allRowsIds,
     status,
     error,
@@ -54,11 +59,25 @@ const QuotesList: FC = () => {
     const {active, over} = event;
 
     if (active.id !== over?.id) {
-      setAllRowsIds((currentAllRowsIds) => {
-        const oldIndex = currentAllRowsIds.indexOf(active.id as string);
-        const newIndex = currentAllRowsIds.indexOf(over?.id as string);
-        return arrayMove(currentAllRowsIds, oldIndex, newIndex);
-      });
+      queryClient.setQueryData(['quotes'], (oldData: { pages: Array<PageProps> }) => {
+
+        const oldRows = oldData ? removeRowsDuplicates(oldData.pages.flatMap((d) => d.results)) : [];
+        const oldIndex = oldRows.findIndex(({ _id }) => _id ===  active.id);
+        const newIndex = oldRows.findIndex(({ _id }) => _id === over?.id);
+        const newRows = arrayMove(oldRows, oldIndex, newIndex);
+
+        const newPages = oldData.pages.map(
+          page => ({
+            ...page,
+            results: newRows.slice(page.lastItemIndex - QUOTES_PER_PAGE_LIMIT, page.lastItemIndex)
+          })
+        )
+
+        return {
+          ...oldData,
+          pages: newPages
+        }
+      })
     }
   };
 
